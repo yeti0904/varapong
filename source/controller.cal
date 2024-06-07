@@ -1,0 +1,18 @@
+const BUTTON_RIGHT  128
+const BUTTON_LEFT   64
+const BUTTON_DOWN   32
+const BUTTON_UP     16
+const BUTTON_START  8
+const BUTTON_SELECT 4
+const BUTTON_B      2
+const BUTTON_A      1
+
+let u8 controllerState
+
+func set_controller_vector begin asm
+	".Controller/vector DEO2"
+end end
+
+func button_pressed begin # button
+	if controllerState @ and then true else false end
+end

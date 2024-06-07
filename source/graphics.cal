@@ -1,0 +1,82 @@
+func init_palette begin asm
+	# 0f 0f 3f 0f 0e 0f
+	"#0f0f .System/r DEO2"
+	"#3f0f .System/g DEO2"
+	"#0e0f .System/b DEO2"
+end end
+
+func set_screen_size begin asm # width, height
+	".Screen/height DEO2"
+	".Screen/width DEO2"
+end end
+
+func get_screen_size begin asm # -> width, height
+	".Screen/width DEI2"
+	".Screen/height DEI2"
+end end
+
+inline draw_pixel begin asm # colour, x, y
+	".Screen/y DEO2"
+	".Screen/x DEO2"
+	"NIP .Screen/pixel DEO"
+end end
+
+func clear begin
+	let cell x
+	let cell y
+	let cell w
+	let cell h
+
+	get_screen_size h ! w !
+
+	while x @ w @ < do
+		while y @ h @ < do
+			0 x @ y @ draw_pixel
+			y @ 1 + y !
+		end
+
+		0 y !
+		x @ 1 + x !
+	end
+end
+
+func draw_rect begin # x, y, w, h, colour
+	let cell x
+	let cell y
+	let cell w
+	let cell h
+	let cell colour
+
+	colour !
+	h !
+	w !
+	y !
+	x !
+
+	let cell ix
+	let cell iy
+	x @ ix !
+	y @ iy !
+
+	while iy @ y @ - h @ < do
+		while ix @ x @ - w @ < do
+			colour @ ix @ iy @ draw_pixel
+
+			ix @ 1 + ix !
+		end
+
+		iy @ 1 + iy !
+		x @ ix !
+	end
+end
+
+func draw_sprite begin asm # opt, x, y, sprite*
+	".Screen/addr DEO2"
+	".Screen/y DEO2"
+	".Screen/x DEO2"
+	"NIP .Screen/sprite DEO"
+end end
+
+func set_frame_vector begin asm
+	".Screen/vector DEO2"
+end end

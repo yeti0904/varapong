@@ -1,0 +1,171 @@
+requires UXN
+
+include "cores/select.cal"
+include "std/io.cal"
+include "std/array.cal"
+include "sprites.cal"
+include "graphics.cal"
+include "controller.cal"
+
+struct Paddle
+	cell x
+	cell y
+	cell w
+	cell h
+end
+
+struct Ball
+	cell x
+	cell y
+	cell vx
+	cell vy
+	cell w
+	cell h
+end
+
+let Paddle player1
+8   player1 Paddle.x + !
+104 player1 Paddle.y + !
+4   player1 Paddle.w + !
+32  player1 Paddle.h + !
+
+let Paddle player2
+308 player2 Paddle.x + !
+104 player2 Paddle.y + !
+4   player2 Paddle.w + !
+32  player2 Paddle.h + !
+
+let Ball ball
+160 ball Ball.x + !
+120 ball Ball.y + !
+4 32768 or   ball Ball.vx + !
+4   ball Ball.vy + !
+8  ball Ball.w  + !
+8  ball Ball.h  + !
+
+func draw_paddle begin # paddle*
+	let addr paddle
+	paddle !
+
+	paddle @ Paddle.x + @
+	paddle @ Paddle.y + @
+	paddle @ Paddle.w + @
+	paddle @ Paddle.h + @
+	1 draw_rect
+end
+
+func draw_ball begin
+	ball Ball.x + @
+	ball Ball.y + @
+	ball Ball.w + @
+	ball Ball.h + @
+	1 draw_rect
+end
+
+func collides_paddle begin # paddle*
+	let addr paddle
+	paddle !
+
+	let cell px2
+	let cell py2
+	let cell bx2
+	let cell by2
+
+	paddle @ Paddle.x + @ paddle @ Paddle.w + @ + px2 !
+	paddle @ Paddle.y + @ paddle @ Paddle.h + @ + py2 !
+	ball Ball.x + @ ball Ball.w + @ + bx2 !
+	ball Ball.y + @ ball Ball.h + @ + by2 !
+
+	if
+		paddle @ Paddle.x + @ bx2 @ <
+		px2 @ ball Ball.x + @ > and
+		paddle @ Paddle.y + @ by2 @ < and
+		py2 @ ball Ball.y + @ > and
+	then true else false end
+end
+
+func on_controller begin
+	asm ".Controller/button DEI #00 SWP" end
+
+	controllerState !
+
+	asm "BRK" end
+end
+
+func on_frame begin
+	clear
+	player1 draw_paddle
+	player2 draw_paddle
+	draw_ball
+
+	# player 1
+	if BUTTON_UP button_pressed then
+		player1 Paddle.y + @ 8 - player1 Paddle.y + !
+
+		if player1 Paddle.y + @ 240 > then
+			0 player1 Paddle.y + !
+		end
+	end
+	if BUTTON_DOWN button_pressed then
+		player1 Paddle.y + @ 8 + player1 Paddle.y + !
+
+		if player1 Paddle.y + @ 240 player1 Paddle.h + @ - > then
+			240 player1 Paddle.h + @ - player1 Paddle.y + !
+		end
+	end
+
+	# player 2
+	if player2 Paddle.y + @ ball Ball.y + @ < then
+		if player2 Paddle.y + @ 207 < then
+			player2 Paddle.y + @ 4 + player2 Paddle.y + !
+		end
+	end
+	if player2 Paddle.y + @ ball Ball.y + @ > then
+		if player2 Paddle.y + @ 4 > then
+			player2 Paddle.y + @ 4 - player2 Paddle.y + !
+		end
+	end
+
+	# update ball
+	if ball Ball.vx + @ 0b1000000000000000 and then
+		ball Ball.x + @ ball Ball.vx + @ 32767 and - ball Ball.x + !
+	else
+		ball Ball.x + @ ball Ball.vx + @ + ball Ball.x + !
+	end
+	if ball Ball.vy + @ 0b1000000000000000 and then
+		ball Ball.y + @ ball Ball.vy + @ 32767 and - ball Ball.y + !
+	else
+		ball Ball.y + @ ball Ball.vy + @ + ball Ball.y + !
+	end
+
+	# ball collision
+	if ball Ball.y + @ ball Ball.h + @ <= then
+		ball Ball.h @ 1 + ball Ball.y !
+		ball Ball.vy + @ 32767 and ball Ball.vy + !
+	end
+	if ball Ball.y + @ 240 ball Ball.h + @ - >= then
+		240 ball Ball.h + @ - 1 - ball Ball.y + !
+		ball Ball.vy + @ 32768 or ball Ball.vy + !
+	end
+	if ball Ball.x + @ 320 >= then
+		160 ball Ball.x + !
+		120 ball Ball.y + !
+	end
+
+	if player1 collides_paddle then
+		player1 Paddle.x + @ player1 Paddle.w + @ + 1 + ball Ball.x + !
+		ball Ball.vx + @ 32767 and ball Ball.vx + !
+	end
+
+	if player2 collides_paddle then
+		player2 Paddle.x + @ ball Ball.w + @ - 1 - ball Ball.x + 1
+		ball Ball.vx + @ 32768 or ball Ball.vx + !
+	end
+
+	asm "BRK" end
+end
+
+init_palette
+320 240 set_screen_size
+&on_controller set_controller_vector
+&on_frame set_frame_vector
