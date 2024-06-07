@@ -21,24 +21,11 @@ inline draw_pixel begin asm # colour, x, y
 	"NIP .Screen/pixel DEO"
 end end
 
-func clear begin
-	let cell x
-	let cell y
-	let cell w
-	let cell h
-
-	get_screen_size h ! w !
-
-	while x @ w @ < do
-		while y @ h @ < do
-			0 x @ y @ draw_pixel
-			y @ 1 + y !
-		end
-
-		0 y !
-		x @ 1 + x !
-	end
-end
+func clear begin asm
+	"#0000 DUP2 .Screen/x DEO2"
+	".Screen/y DEO2"
+	"[ LIT2 80 -Screen/pixel ] DEO"
+end end
 
 func draw_rect begin # x, y, w, h, colour
 	let cell x

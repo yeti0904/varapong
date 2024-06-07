@@ -35,13 +35,13 @@ let Paddle player2
 4   player2 Paddle.w + !
 32  player2 Paddle.h + !
 
-let Ball ball
-160 ball Ball.x + !
-120 ball Ball.y + !
-4 32768 or   ball Ball.vx + !
-4   ball Ball.vy + !
-8  ball Ball.w  + !
-8  ball Ball.h  + !
+let        Ball ball
+160        ball Ball.x + !
+120        ball Ball.y + !
+2 32768 or ball Ball.vx + !
+2          ball Ball.vy + !
+8          ball Ball.w  + !
+8          ball Ball.h  + !
 
 func draw_paddle begin # paddle*
 	let addr paddle
@@ -100,14 +100,14 @@ func on_frame begin
 
 	# player 1
 	if BUTTON_UP button_pressed then
-		player1 Paddle.y + @ 8 - player1 Paddle.y + !
+		player1 Paddle.y + @ 4 - player1 Paddle.y + !
 
 		if player1 Paddle.y + @ 240 > then
 			0 player1 Paddle.y + !
 		end
 	end
 	if BUTTON_DOWN button_pressed then
-		player1 Paddle.y + @ 8 + player1 Paddle.y + !
+		player1 Paddle.y + @ 4 + player1 Paddle.y + !
 
 		if player1 Paddle.y + @ 240 player1 Paddle.h + @ - > then
 			240 player1 Paddle.h + @ - player1 Paddle.y + !
